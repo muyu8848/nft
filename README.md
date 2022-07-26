@@ -48,6 +48,11 @@
         <td><img src="https://github.com/muyu8848/nft/blob/main/img/17.jpg"/></td>
 	<td><img src="https://github.com/muyu8848/nft/blob/main/img/18.jpg"/></td>
     </tr>
+    <tr>
+        <td><img src="https://github.com/muyu8848/nft/blob/main/img/19.jpg"/></td>
+        <td><img src="https://github.com/muyu8848/nft/blob/main/img/20.jpg"/></td>
+	<td><img src="https://github.com/muyu8848/nft/blob/main/img/21.jpg"/></td>
+    </tr>  
 	 
 </table>
 
