@@ -24,11 +24,13 @@ public class MemberHoldCollectionQueryCondParam extends PageParam {
 	private String memberMobile;
 
 	private String collectionName;
-	
+
+	private String commodityType;
+
 	private String gainWay;
 
 	private String memberId;
-	
+
 	private String state;
 
 	public Specification<MemberHoldCollection> buildSpecification() {
@@ -47,6 +49,10 @@ public class MemberHoldCollectionQueryCondParam extends PageParam {
 				}
 				if (StrUtil.isNotEmpty(param.getCollectionName())) {
 					predicates.add(builder.equal(root.join("collection").get("name"), param.getCollectionName()));
+				}
+				if (StrUtil.isNotEmpty(param.getCommodityType())) {
+					predicates
+							.add(builder.equal(root.join("collection").get("commodityType"), param.getCommodityType()));
 				}
 				if (StrUtil.isNotEmpty(param.getGainWay())) {
 					predicates.add(builder.equal(root.get("gainWay"), param.getGainWay()));

@@ -13,7 +13,4 @@ public class AddMemberParam {
 	@NotBlank
 	private String mobile;
 
-	@NotBlank
-	private String loginPwd;
-
 }

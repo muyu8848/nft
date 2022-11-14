@@ -23,6 +23,10 @@ public class MemberQueryCondParam extends PageParam {
 
 	private String mobile;
 
+	private String inviterId;
+
+	private String inviterMobile;
+
 	public Specification<Member> buildSpecification() {
 		MemberQueryCondParam param = this;
 		Specification<Member> spec = new Specification<Member>() {
@@ -36,6 +40,12 @@ public class MemberQueryCondParam extends PageParam {
 				predicates.add(builder.equal(root.get("deletedFlag"), false));
 				if (StrUtil.isNotEmpty(param.getMobile())) {
 					predicates.add(builder.equal(root.get("mobile"), param.getMobile()));
+				}
+				if (StrUtil.isNotEmpty(param.getInviterId())) {
+					predicates.add(builder.equal(root.get("inviterId"), param.getInviterId()));
+				}
+				if (StrUtil.isNotEmpty(param.getInviterMobile())) {
+					predicates.add(builder.equal(root.join("inviter").get("mobile"), param.getInviterMobile()));
 				}
 				return predicates.size() > 0 ? builder.and(predicates.toArray(new Predicate[predicates.size()])) : null;
 			}

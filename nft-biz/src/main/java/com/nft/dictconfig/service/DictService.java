@@ -89,6 +89,11 @@ public class DictService {
 
 	@Transactional
 	public void addOrUpdateDictType(@Valid AddOrUpdateDictTypeParam param) {
+		DictType existDictType = dictTypeRepo.findByDictTypeCode(param.getDictTypeCode());
+		if ((StrUtil.isBlank(param.getId()) && existDictType != null)
+				|| (StrUtil.isNotBlank(param.getId()) && !param.getId().equals(existDictType.getId()))) {
+			throw new BizException("字典类型code已存在");
+		}
 		if (StrUtil.isBlank(param.getId())) {
 			DictType dictType = param.convertToPo();
 			dictTypeRepo.save(dictType);

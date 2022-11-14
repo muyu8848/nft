@@ -24,11 +24,15 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class CollectionQueryCondParam extends PageParam {
 
+	private String commodityType;
+
 	private String name;
-	
+
+	private String creatorId;
+
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date saleTimeStart;
-	
+
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date saleTimeEnd;
 
@@ -43,8 +47,14 @@ public class CollectionQueryCondParam extends PageParam {
 			public Predicate toPredicate(Root<Collection> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
 				List<Predicate> predicates = new ArrayList<Predicate>();
 				predicates.add(builder.equal(root.get("deletedFlag"), false));
+				if (StrUtil.isNotEmpty(param.getCommodityType())) {
+					predicates.add(builder.equal(root.get("commodityType"), param.getCommodityType()));
+				}
 				if (StrUtil.isNotEmpty(param.getName())) {
 					predicates.add(builder.equal(root.get("name"), param.getName()));
+				}
+				if (StrUtil.isNotEmpty(param.getCreatorId())) {
+					predicates.add(builder.equal(root.get("creatorId"), param.getCreatorId()));
 				}
 				if (param.getSaleTimeStart() != null) {
 					predicates.add(builder.greaterThanOrEqualTo(root.get("saleTime").as(Date.class),

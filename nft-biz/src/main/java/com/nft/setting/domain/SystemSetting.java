@@ -40,12 +40,14 @@ public class SystemSetting implements Serializable {
 	private String appUrl;
 
 	private Double appVersion;
-	
+
 	private String appSchema;
 
-	private String apiGateway;
+	private String h5Gateway;
 
 	private String localStoragePath;
+
+	private String customerServiceUrl;
 
 	private Date latelyUpdateTime;
 

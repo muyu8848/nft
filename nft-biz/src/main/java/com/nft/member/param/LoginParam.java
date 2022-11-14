@@ -11,6 +11,8 @@ public class LoginParam {
 	private String mobile;
 
 	@NotBlank
-	private String loginPwd;
+	private String verificationCode;
+	
+	private String inviteCode;
 
 }

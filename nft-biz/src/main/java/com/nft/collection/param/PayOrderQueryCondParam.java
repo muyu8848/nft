@@ -20,6 +20,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class PayOrderQueryCondParam extends PageParam {
+	
+	private String memberMobile;
 
 	private String memberId;
 
@@ -37,6 +39,9 @@ public class PayOrderQueryCondParam extends PageParam {
 				List<Predicate> predicates = new ArrayList<Predicate>();
 				if (StrUtil.isNotEmpty(param.getMemberId())) {
 					predicates.add(builder.equal(root.get("memberId"), param.getMemberId()));
+				}
+				if (StrUtil.isNotEmpty(param.getMemberMobile())) {
+					predicates.add(builder.equal(root.join("member").get("mobile"), param.getMemberMobile()));
 				}
 				if (StrUtil.isNotEmpty(param.getState())) {
 					predicates.add(builder.equal(root.get("state"), param.getState()));

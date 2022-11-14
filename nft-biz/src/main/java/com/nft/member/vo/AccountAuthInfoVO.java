@@ -19,12 +19,12 @@ public class AccountAuthInfoVO {
 	
 	private Integer keepLoginDuration;
 	
-	public static AccountAuthInfoVO convertFor(Member userAccount) {
-		if (userAccount == null) {
+	public static AccountAuthInfoVO convertFor(Member member) {
+		if (member == null) {
 			return null;
 		}
 		AccountAuthInfoVO vo = new AccountAuthInfoVO();
-		BeanUtils.copyProperties(userAccount, vo);
+		BeanUtils.copyProperties(member, vo);
 		return vo;
 	}
 

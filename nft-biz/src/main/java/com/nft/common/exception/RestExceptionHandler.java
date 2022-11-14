@@ -30,9 +30,9 @@ public class RestExceptionHandler {
 		if (e != null) {
 			String type = e.getType();
 			if (NotLoginException.NOT_TOKEN.equals(type)) {
-				msg = "未登录";
+				msg = "请先登录";
 			} else if (NotLoginException.INVALID_TOKEN.equals(type)) {
-				msg = "未登录";
+				msg = "请先登录";
 			} else if (NotLoginException.TOKEN_TIMEOUT.equals(type)) {
 				msg = "登录已过期";
 			} else if (NotLoginException.BE_REPLACED.equals(type)) {

@@ -43,6 +43,8 @@ public class MemberHoldCollection implements Serializable {
 	@Id
 	@Column(name = "id", length = 32)
 	private String id;
+	
+	private String preId;
 
 	private Double price;
 
@@ -54,9 +56,9 @@ public class MemberHoldCollection implements Serializable {
 
 	private Date loseTime;
 
-	private Date resaleTime;
-
-	private Double resalePrice;
+	private String transactionHash;
+	
+	private Date syncChainTime;
 
 	@Version
 	private Long version;
@@ -76,17 +78,46 @@ public class MemberHoldCollection implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "collection_id", updatable = false, insertable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
 	private Collection collection;
+
+	@Column(name = "issued_collection_id", length = 32)
+	private String issuedCollectionId;
+
+	@NotFound(action = NotFoundAction.IGNORE)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "issued_collection_id", updatable = false, insertable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+	private IssuedCollection issuedCollection;
 	
-	public void cancelResale() {
-		this.setState(Constant.持有藏品状态_持有中);
-		this.setResaleTime(null);
-		this.setResalePrice(null);
+	public void syncChain(String transactionHash) {
+		this.setTransactionHash(transactionHash);
+		this.setSyncChainTime(new Date());
+	}
+	
+	public void composeDestroy() {
+		this.setLoseTime(new Date());
+		this.setState(Constant.持有藏品状态_合成销毁);
+	}
+	
+	public void openMysteryBoxDestroy() {
+		this.setLoseTime(new Date());
+		this.setState(Constant.持有藏品状态_开盲盒销毁);
 	}
 
-	public void resale(Double resalePrice) {
-		this.setState(Constant.持有藏品状态_转售中);
-		this.setResaleTime(new Date());
-		this.setResalePrice(resalePrice);
+	public void sold() {
+		this.setLoseTime(new Date());
+		this.setState(Constant.持有藏品状态_已卖出);
+	}
+
+	public MemberResaleCollection buildResaleCollectionReocrd(Double resalePrice) {
+		MemberResaleCollection po = new MemberResaleCollection();
+		po.setId(IdUtils.getId());
+		po.setState(Constant.转售的藏品状态_已发布);
+		po.setResaleTime(new Date());
+		po.setResalePrice(resalePrice);
+		po.setMemberId(this.getMemberId());
+		po.setCollectionId(this.getCollectionId());
+		po.setMemberHoldCollectionId(this.getId());
+		po.setIssuedCollectionId(this.getIssuedCollectionId());
+		return po;
 	}
 
 	public MemberHoldCollection buildWithGive(String giveToId) {
@@ -96,21 +127,23 @@ public class MemberHoldCollection implements Serializable {
 		po.setHoldTime(new Date());
 		po.setMemberId(giveToId);
 		po.setGainWay(Constant.藏品获取方式_赠送);
+		po.setTransactionHash(null);
+		po.setSyncChainTime(null);
 		return po;
 	}
 
-	public MemberHoldCollection buildWithResale(String buyerId) {
+	public MemberHoldCollection buildWithBuyerHold(String buyerId, Double price) {
 		MemberHoldCollection po = new MemberHoldCollection();
 		BeanUtils.copyProperties(this, po);
 		po.setId(IdUtils.getId());
 		po.setHoldTime(new Date());
 		po.setLoseTime(null);
-		po.setResaleTime(null);
-		po.setResalePrice(null);
 		po.setGainWay(Constant.藏品获取方式_二级市场);
 		po.setMemberId(buyerId);
-		po.setPrice(this.getResalePrice());
+		po.setPrice(price);
 		po.setState(Constant.持有藏品状态_持有中);
+		po.setTransactionHash(null);
+		po.setSyncChainTime(null);
 		return po;
 	}
 

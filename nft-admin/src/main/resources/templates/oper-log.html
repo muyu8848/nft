@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog v-model="showRequestParamDialogFlag" full-height> <q-card style="min-width: 450px !important; max-width: 450px !important;"> <q-card-section
+			class="row items-center q-pb-none">
+		<div class="text-h6">入参</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none">
+		<div style="word-wrap: break-word; word-break: normal;">{{requestParam}}</div>
+		</q-card-section> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="operName" label="操作账号" :dense="true"></q-input>
+				<q-input outlined v-model="ipAddr" label="ip地址" :dense="true"></q-input>
+				<q-input outlined v-model="startTime" label="操作时间上" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate1"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="startTime" mask="YYYY-MM-DD" @input="$refs.qdate1.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-input outlined v-model="endTime" label="操作时间下" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate2"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="endTime" mask="YYYY-MM-DD" @input="$refs.qdate2.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-request_param="props"> <q-td :props="props">
+			<div>
+				<q-btn rounded color="primary" label="查看入参" @click="showRequestParamDialog(props.value)"></q-btn>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/oper-log.js"></script>
+</body>
+</html>

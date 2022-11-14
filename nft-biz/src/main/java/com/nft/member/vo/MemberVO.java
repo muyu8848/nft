@@ -21,10 +21,12 @@ public class MemberVO {
 
 	private String realName;
 
+	private String identityCard;
+
 	private String mobile;
 
 	private String nickName;
-	
+
 	private String avatar;
 
 	private String blockChainAddr;
@@ -35,9 +37,9 @@ public class MemberVO {
 
 	private Double balance;
 
-	private Double freezeFund;
+	private Boolean boughtFlag;
 
-	private Integer keepLoginDuration;
+	private String inviteCode;
 
 	private Boolean notSetPayPwd;
 
@@ -46,6 +48,11 @@ public class MemberVO {
 
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
 	private Date latelyLoginTime;
+
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	private Date bindRealNameTime;
+
+	private String inviterMobile;
 
 	public static List<MemberVO> convertFor(List<Member> pos) {
 		if (CollectionUtil.isEmpty(pos)) {
@@ -66,6 +73,9 @@ public class MemberVO {
 		BeanUtils.copyProperties(po, vo);
 		vo.setNotSetPayPwd(StrUtil.isBlank(po.getPayPwd()));
 		vo.setStateName(DictHolder.getDictItemName("functionState", vo.getState()));
+		if (po.getInviter() != null) {
+			vo.setInviterMobile(po.getInviter().getMobile());
+		}
 		return vo;
 	}
 

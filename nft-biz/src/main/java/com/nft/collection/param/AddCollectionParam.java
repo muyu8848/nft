@@ -19,7 +19,7 @@ public class AddCollectionParam {
 
 	@NotBlank
 	private String name;
-	
+
 	@NotBlank
 	private String cover;
 
@@ -31,12 +31,14 @@ public class AddCollectionParam {
 	@DecimalMin(value = "0", inclusive = false)
 	private Integer quantity;
 
-	@NotNull
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
 	private Date saleTime;
-	
+
 	@NotBlank
 	private String creatorId;
+	
+	@NotBlank
+	private String commodityType;
 
 	public Collection convertToPo() {
 		Collection po = new Collection();
@@ -45,6 +47,7 @@ public class AddCollectionParam {
 		po.setDeletedFlag(false);
 		po.setCreateTime(new Date());
 		po.setStock(po.getQuantity());
+		po.setExternalSaleFlag(po.getSaleTime() != null);
 		return po;
 	}
 

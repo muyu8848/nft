@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<script src="https://cdn.staticfile.org/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+<style type="text/css">
+</style>
+</head>
+
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="account-manage" v-cloak>
+		<ul class="nav common-tab">
+			<li class="nav-item selected-tab-item"><a class="nav-link">谷歌验证器</a></li>
+		</ul>
+		<div class="row" style="margin-right: 0; margin-left: 0; padding-top: 40px;">
+			<div class="col-sm-4 offset-sm-4">
+				<div v-show="googleAuthBindTime == null">
+					<div>请打开谷歌验证器APP，选择"扫描二维码"，或手动输入密钥</div>
+					<div style="padding-left: 2rem; padding-right: 2rem;">
+						<label style="padding-right: 1rem; margin-bottom: 0;">谷歌密钥:</label><span>{{googleSecretKey}}</span>
+						<button type="button" class="btn btn-primary btn-sm" style="float: right;" v-on:click="generateGoogleSecretKey">更换密钥</button>
+					</div>
+					<div style="text-align: center; padding-top: 0.5rem; padding-bottom: 0.5rem;">
+						<div class="code-content"></div>
+					</div>
+					<div>请输入6位数字谷歌验证码完成绑定操作</div>
+					<div>
+						<input type="text" class="form-control" v-model="googleVerCode" placeholder="请输入谷歌验证码">
+					</div>
+					<div class="row" style="padding-top: 20px;">
+						<div class="col-sm-11 offset-sm-1">
+							<button type="button" class="btn btn-success" v-on:click="bindGoogleAuth">绑定</button>
+						</div>
+					</div>
+				</div>
+				<div style="font-weight: bold; color: blue;" v-show="googleAuthBindTime != null">
+					<div>已绑定谷歌验证器!</div>
+					<div>如需解绑,请联系超级管理员处理</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/js/google-auth.js"></script>
+</body>
+</html>

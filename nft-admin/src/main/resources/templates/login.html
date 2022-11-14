@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet" type="text/css">
+<link href="/js/quasar/quasar.min.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/vue/2.6.9/vue.min.js"></script>
+	<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+	<script src="/js/quasar/quasar.umd.min.js"></script>
+	<script src="/js/quasar/zh-hans.umd.min.js"></script>
+	<script src="/js/common/common.js"></script>
+	<div id="q-app">
+		<template> <q-layout> <q-page-container> <q-page class="row justify-center items-center " style="background: linear-gradient(#8274C5, #5A4A9F);">
+		<div class="column q-pa-lg">
+			<div class="row">
+				<q-card square class="shadow-24" style="width:300px;height:485px;"> <q-card-section class="bg-deep-purple-7">
+				<h4 class="text-h5 text-white q-my-md">管理后台</h4>
+				<div class="absolute-bottom-right q-pr-md" style="transform: translateY(50%);">
+					<q-btn fab icon="add" color="primary"></q-btn>
+				</div>
+				</q-card-section> <q-card-section> <q-form class="q-px-sm q-pt-xl q-pb-lg"> <q-input square clearable v-model="userName" label="账号"> <template v-slot:prepend> <q-icon
+					name="person"></q-icon> </template> </q-input> <q-input square v-model="loginPwd" type="password" label="密码"> <template v-slot:prepend> <q-icon name="lock"></q-icon> </template> </q-input> </q-form> </q-card-section> <q-card-actions
+					class="q-px-lg"> <q-btn unelevated size="lg" color="primary" class="full-width text-white" label="立即登录" @click="login"></q-btn> </q-card-actions> </q-card>
+			</div>
+		</div>
+		</q-page> </q-page-container> </q-layout> </template>
+	</div>
+	<script type="text/javascript">
+		Quasar.lang.set(Quasar.lang.zhHans)
+		var appVM = new Vue({
+			el : '#q-app',
+			data : function() {
+				return {
+					userName : '',
+					loginPwd : ''
+				}
+			},
+			mounted : function() {
+			},
+			methods : {
+
+				login : function() {
+					var that = this;
+					if (that.userName === null || that.userName === '') {
+						that.$q.notify({
+							type : 'negative',
+							message : '请输入账号'
+						});
+						return;
+					}
+					if (that.loginPwd == null || that.loginPwd == '') {
+						that.$q.notify({
+							type : 'negative',
+							message : '请输入密码'
+						});
+						return;
+					}
+					that.$http.post('/login', {
+						userName : that.userName,
+						loginPwd : that.loginPwd
+					}, {
+						emulateJSON : true
+					}).then(function(res) {
+						var tokenInfo = res.body.data;
+						window.sessionStorage.setItem('tokenName', tokenInfo.tokenName);
+						window.sessionStorage.setItem('tokenValue', tokenInfo.tokenValue);
+						that.loadMenu();
+					});
+				},
+
+				loadMenu : function() {
+					var that = this;
+					that.$http.get('/rbac/findMyMenuTree').then(function(res) {
+						var menus = res.body.data;
+						for (var i = 0; i < menus.length; i++) {
+							var menu = menus[i];
+							if (menu.url != null && menu.url != '') {
+								window.location.href = menu.url;
+								return;
+							}
+							for (var j = 0; j < menu.subMenus.length; j++) {
+								var subMenu = menu.subMenus[j];
+								if (subMenu.url != null && subMenu.url != '') {
+									window.location.href = subMenu.url;
+									return;
+								}
+							}
+						}
+					});
+				},
+			},
+		});
+	</script>
+</body>
+</html>

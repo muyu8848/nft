@@ -59,7 +59,7 @@ public class PayOrder implements Serializable {
 
 	private Double amount;
 
-	private String bizType;
+	private String bizMode;
 
 	private String bizOrderNo;
 
@@ -92,17 +92,17 @@ public class PayOrder implements Serializable {
 		this.setPaidTime(new Date());
 	}
 
-	public static PayOrder buildWithResaleCollection(MemberHoldCollection memberHoldCollection, Member member) {
+	public static PayOrder buildWithResaleCollection(MemberResaleCollection memberResaleCollection, Member member) {
 		PayOrder po = new PayOrder();
 		po.setId(IdUtils.getId());
 		po.setOrderNo(po.getId());
 		po.setCreateTime(new Date());
 		po.setOrderDeadline(DateUtil.offset(po.getCreateTime(), DateField.MINUTE, 15));
-		po.setState(Constant.支付订单状态_待支付);
-		po.setAmount(memberHoldCollection.getResalePrice());
-		po.setBizType(Constant.支付订单业务类型_二级市场藏品);
-		po.setBizOrderNo(memberHoldCollection.getId());
-		po.setCollectionId(memberHoldCollection.getCollectionId());
+		po.setState(Constant.支付订单状态_待付款);
+		po.setAmount(memberResaleCollection.getResalePrice());
+		po.setBizMode(Constant.支付订单业务类型_二级市场);
+		po.setBizOrderNo(memberResaleCollection.getId());
+		po.setCollectionId(memberResaleCollection.getCollectionId());
 		po.setMemberId(member.getId());
 		return po;
 	}
@@ -113,9 +113,9 @@ public class PayOrder implements Serializable {
 		po.setOrderNo(po.getId());
 		po.setCreateTime(new Date());
 		po.setOrderDeadline(DateUtil.offset(po.getCreateTime(), DateField.MINUTE, 15));
-		po.setState(Constant.支付订单状态_待支付);
+		po.setState(Constant.支付订单状态_待付款);
 		po.setAmount(collection.getPrice());
-		po.setBizType(Constant.支付订单业务类型_首发藏品);
+		po.setBizMode(Constant.支付订单业务模式_平台自营);
 		po.setCollectionId(collection.getId());
 		po.setMemberId(member.getId());
 		return po;

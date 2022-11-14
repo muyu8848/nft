@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.custom-sub-title {
+	font-weight: bold;
+	padding-bottom: 30px;
+}
+
+.custom-sub-tip {
+	color: #1976d2;
+}
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<div class="row">
+				<div class="col-2">
+					<q-tabs v-model="tab" vertical class="text-grey" active-color="primary" indicator-color="primary"> <q-tab v-for="tab in tabs" :name="tab.name" :label="tab.label"></q-tab> </q-tabs>
+				</div>
+				<div class="col">
+					<div class="q-pa-md">
+						<div v-show="tab == 'system'">
+							<div class="custom-sub-title">系统设置</div>
+							<div class="q-gutter-md">
+								<q-input type="number" style="max-width: 300px" outlined dense stack-label v-model.number="systemSetting.appVersion" label="APP最新版本号"></q-input>
+								<q-input style="max-width: 300px" outlined dense stack-label v-model="systemSetting.appUrl" label="APP下载地址"></q-input>
+								<q-input style="max-width: 300px" outlined dense stack-label v-model="systemSetting.appSchema" label="APP Schema"></q-input>
+								<q-input style="max-width: 300px" outlined dense stack-label v-model="systemSetting.h5Gateway" label="h5网关"></q-input>
+								<q-input style="max-width: 300px" outlined dense stack-label v-model="systemSetting.customerServiceUrl" label="客服系统链接"></q-input>
+								<q-input style="max-width: 300px" outlined dense stack-label v-model="systemSetting.localStoragePath" label="图片资源存放目录"></q-input>
+								<q-btn color="primary" label="更新" @click="updateSystemSetting"></q-btn>
+							</div>
+						</div>
+						<div v-show="tab == 'chain'">
+							<div class="custom-sub-title">区块链</div>
+							<div class="q-gutter-md">
+								<div class="row">
+									<div class="col">
+										<div>选择要上的链</div>
+										<template v-for="dictItem in chainTypes"> <q-radio v-model="currentInUseChain" :val="dictItem.value" :label="dictItem.name"></q-radio> </template>
+									</div>
+								</div>
+								<q-btn color="primary" label="更新" @click="updateCurrentInUseChain"></q-btn>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/js/setting.js"></script>
+</body>
+</html>

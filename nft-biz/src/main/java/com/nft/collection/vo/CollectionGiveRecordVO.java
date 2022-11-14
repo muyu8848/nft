@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nft.collection.domain.Collection;
 import com.nft.collection.domain.CollectionGiveRecord;
+import com.nft.collection.domain.IssuedCollection;
 
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.Data;
@@ -22,15 +23,19 @@ public class CollectionGiveRecordVO {
 	private Date giveTime;
 
 	private String collectionName;
-	
+
 	private String collectionCover;
 
+	private Integer quantity;
+
+	private Integer collectionSerialNumber;
+
 	private String giveFromMobile;
-	
+
 	private String giveFromBlockChainAddr;
 
 	private String giveToMobile;
-	
+
 	private String giveToBlockChainAddr;
 
 	public static List<CollectionGiveRecordVO> convertFor(List<CollectionGiveRecord> pos) {
@@ -55,6 +60,11 @@ public class CollectionGiveRecordVO {
 			if (collection != null) {
 				vo.setCollectionName(collection.getName());
 				vo.setCollectionCover(collection.getCover());
+				vo.setQuantity(collection.getQuantity());
+			}
+			IssuedCollection issuedCollection = po.getHoldCollection().getIssuedCollection();
+			if (issuedCollection != null) {
+				vo.setCollectionSerialNumber(issuedCollection.getCollectionSerialNumber());
 			}
 		}
 		if (po.getGiveFrom() != null) {

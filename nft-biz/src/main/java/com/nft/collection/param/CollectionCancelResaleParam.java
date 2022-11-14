@@ -11,6 +11,6 @@ public class CollectionCancelResaleParam {
 	private String memberId;
 
 	@NotBlank
-	private String holdCollectionId;
+	private String resaleCollectionId;
 
 }

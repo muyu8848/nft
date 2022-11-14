@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+
+.viewer-container {
+	z-index: 9999 !important;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<link href="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.css" rel="stylesheet">
+	<script src="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+
+		<q-dialog persistent v-model="showComposeRecordDialogFlag"> <q-card style="min-width: 750px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">合成记录</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none">
+		<div class="q-gutter-md q-pb-md row">
+			<q-input outlined v-model="memberMobile" label="手机号" :dense="true"></q-input>
+			<q-btn color="primary" label="查询" @click="findComposeRecord"></q-btn>
+		</div>
+		<q-markup-table style="height: 450px"> <template>
+		<thead>
+			<tr>
+				<th class="text-left">会员手机号</th>
+				<th class="text-left">会员区块链地址</th>
+				<th class="text-left">艺术品编号</th>
+				<th class="text-left">合成时间</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="data in composeRecords">
+				<td class="text-left">{{data.memberMobile}}</td>
+				<td class="text-left">{{data.memberBlockChainAddr}}</td>
+				<td class="text-left">#{{data.collectionSerialNumber}}</td>
+				<td class="text-left">{{data.composeTime}}</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> </q-card> </q-dialog>
+		<q-dialog persistent v-model="updateComposeMaterialDialogFlag"> <q-card style="min-width: 500px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑合成原料</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-markup-table style="height: 400px"> <template>
+		<thead>
+			<tr>
+				<th class="text-left">原料</th>
+				<th class="text-left">数量</th>
+				<th class="text-left">操作</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="(material, index) in materials">
+				<td class="text-left"><q-select outlined style="min-width: 300px; max-width: 300px" v-model="material.materialId" emit-value map-options :options="collections" option-value=id
+						option-label="name" :dense="true"> <template v-slot:option="scope"> <q-item v-bind="scope.itemProps" v-on="scope.itemEvents"> <q-item-section avatar>
+					<img :src="scope.opt.cover" style="height: 30px; width: 30px; object-fit: contain;"> </q-item-section> <q-item-section> <q-item-label>{{ scope.opt.name }}</q-item-label> </q-item-section> </q-item> </template> </q-select></td>
+				<td class="text-left"><q-input outlined type="number" v-model.number="material.quantity" :dense="true"></q-input></td>
+				<td class="text-left">
+					<div class="q-gutter-sm">
+						<q-btn color="primary" label="删除" @click="removeMaterial(index)"></q-btn>
+					</div>
+
+				</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateComposeMaterial"></q-btn> <q-btn label="新增" color="primary" @click="addMaterial"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增活动</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedRecord.title" label="标题" :dense="true"></q-input> <q-select outlined v-model="selectedRecord.collectionId" emit-value map-options :options="collections" option-value=id
+			option-label="name" :dense="true" label="合成后的艺术品"> </q-select> <q-input outlined type="number" v-model="selectedRecord.quantity" label="数量" :dense="true"></q-input> <q-input outlined
+			v-model="selectedRecord.activityTimeStart" label="活动开始时间" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy
+			transition-show="scale" transition-hide="scale"> <q-date v-model="selectedRecord.activityTimeStart" mask="YYYY-MM-DD HH:mm">
+		<div class="row items-center justify-end">
+			<q-btn v-close-popup label="确定" color="primary" flat></q-btn>
+		</div>
+		</q-date> </q-popup-proxy> </q-icon> <q-icon name="access_time" class="cursor-pointer"> <q-popup-proxy transition-show="scale" transition-hide="scale"> <q-time v-model="selectedRecord.activityTimeStart"
+			mask="YYYY-MM-DD HH:mm" format24h>
+		<div class="row items-center justify-end">
+			<q-btn v-close-popup label="确定" color="primary" flat></q-btn>
+		</div>
+		</q-time> </q-popup-proxy> </q-icon> </template> </q-input> <q-input outlined v-model="selectedRecord.activityTimeEnd" label="活动结束时间" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy
+			transition-show="scale" transition-hide="scale"> <q-date v-model="selectedRecord.activityTimeEnd" mask="YYYY-MM-DD HH:mm">
+		<div class="row items-center justify-end">
+			<q-btn v-close-popup label="确定" color="primary" flat></q-btn>
+		</div>
+		</q-date> </q-popup-proxy> </q-icon> <q-icon name="access_time" class="cursor-pointer"> <q-popup-proxy transition-show="scale" transition-hide="scale"> <q-time v-model="selectedRecord.activityTimeEnd"
+			mask="YYYY-MM-DD HH:mm" format24h>
+		<div class="row items-center justify-end">
+			<q-btn v-close-popup label="确定" color="primary" flat></q-btn>
+		</div>
+		</q-time> </q-popup-proxy> </q-icon> </template> </q-input> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="add"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left> <!-- <div class="q-gutter-md row query-cond">
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div> --> </template> <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增活动" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-collection_info="props"> <q-td :props="props">
+			<div style="display: flex; align-items: center;">
+				<div>
+					<img :src="props.row.collectionCover" style="height: 50px; width: 50px; object-fit: contain;">
+				</div>
+				<div style="padding-left: 4px;">
+					<div>{{props.row.collectionName}}</div>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-material_info="props"> <q-td :props="props">
+			<div>
+				<div v-for="material in props.row.materials">
+					<span>{{material.materialName}}</span> <span style="float: right; color: red;">×{{material.quantity}}</span>
+				</div>
+				<div>
+					<q-btn size="xs" color="secondary" label="编辑" @click="showUpdateComposeMaterialDialog(props.row.id)"></q-btn>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-activity_time_range="props"> <q-td :props="props">
+			<div>
+				<div>开始时间:{{props.row.activityTimeStart}}</div>
+				<div>结束时间:{{props.row.activityTimeEnd}}</div>
+				<div>{{friendlyActivityTimeRange(props.row)}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class=" q-gutter-sm">
+				<q-btn color="primary" label="合成记录" @click="showComposeRecordDialog(props.row.id)"></q-btn>
+				<q-btn-dropdown color="primary" label="更多"> <q-list> <q-item clickable v-close-popup @click="del(props.row.id)"> <q-item-section> <q-item-label>删除</q-item-label>
+				</q-item-section> </q-item> </q-list> </q-btn-dropdown>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/compose-activity.js"></script>
+</body>
+</html>

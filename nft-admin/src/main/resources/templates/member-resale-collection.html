@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+
+.viewer-container {
+	z-index: 9999 !important;
+}
+
+.hash-info {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: inline-block;
+	width: 200px;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<link href="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.css" rel="stylesheet">
+	<script src="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="memberMobile" label="会员手机号" :dense="true"></q-input>
+				<q-input outlined v-model="collectionName" label="藏品名称" :dense="true"></q-input>
+				<q-select clearable outlined v-model="state" emit-value map-options :options="stateDictItems" option-value="dictItemCode" option-label="dictItemName" label="状态" :dense="true"> </q-select>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right>
+			<div class="q-gutter-md row"></div>
+			</template> <template v-slot:body-cell-member_info="props"> <q-td :props="props">
+			<div>
+				<div>手机号:{{props.row.memberMobile}}</div>
+				<div style="display: flex; align-items: center;">
+					<span class="hash-info">区块链地址:{{props.row.memberBlockChainAddr}}</span><span class="copy-btn" :data-clipboard-text="props.row.memberBlockChainAddr"><q-icon name="img:/images/copy.png"></q-icon></span>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-collection_info="props"> <q-td :props="props">
+			<div style="display: flex; align-items: center;">
+				<div>
+					<img :src="props.row.collectionCover" style="height: 40px; width: 40px; object-fit: contain;">
+				</div>
+				<div style="padding-left: 4px;">
+					<div>{{props.row.collectionName}}</div>
+					<div>#{{props.row.collectionSerialNumber}}/{{props.row.quantity}}</div>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-tech_info="props"> <q-td :props="props">
+			<div style="display: flex; align-items: center;" v-show="props.row.uniqueId">
+				唯一标识:<span class="hash-info">{{props.row.uniqueId}}</span><span class="copy-btn" :data-clipboard-text="props.row.uniqueId"><q-icon name="img:/images/copy.png"></q-icon></span>
+			</div>
+			<div style="display: flex; align-items: center;" v-show="props.row.transactionHash">
+				交易HASH:<span class="hash-info">{{props.row.transactionHash}}</span><span class="copy-btn" :data-clipboard-text="props.row.transactionHash"><q-icon name="img:/images/copy.png"></q-icon></span>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-time_info="props"> <q-td :props="props">
+			<div>
+				<div>发布时间:{{props.row.resaleTime}}</div>
+				<div v-show="props.row.soldTime">卖出时间:{{props.row.soldTime}}</div>
+				<div v-show="props.row.cancelTime">取消时间:{{props.row.cancelTime}}</div>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/member-resale-collection.js"></script>
+</body>
+</html>

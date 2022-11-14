@@ -20,9 +20,11 @@ public class SystemSettingParam {
 	private String appSchema;
 
 	@NotBlank
-	private String apiGateway;
+	private String h5Gateway;
 
 	@NotBlank
 	private String localStoragePath;
+	
+	private String customerServiceUrl;
 
 }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<q-table title="超级管理员" color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" hide-pagination :loading="tableDataLoading" @request="loadTableData"> <template
+				v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class="q-gutter-sm">
+				<q-btn color="primary" label="修改登录密码" @click="updateLoginPwd(props.row.id)"></q-btn>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/super-admin.js"></script>
+</body>
+</html>

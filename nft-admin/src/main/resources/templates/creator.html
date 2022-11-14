@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+
+.viewer-container {
+	z-index: 9999 !important;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<link href="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.css" rel="stylesheet">
+	<script src="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog persistent v-model="showEditDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑创作者</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedRecord.name" label="创作者名称" :dense="true"></q-input> <q-input outlined v-model="selectedRecord.avatar" label="头像" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right">
+		<q-btn label="保存" color="primary" @click="update"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增创作者</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedRecord.name" label="创作者名称" :dense="true"></q-input> <q-input outlined v-model="selectedRecord.avatar" label="头像" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right">
+		<q-btn label="保存" color="primary" @click="add"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="name" label="创作者名称" :dense="true"></q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增藏品" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-name_info="props"> <q-td :props="props">
+			<div style="font-size: smaller;">{{props.row.name}}</div>
+			</q-td> </template> <template v-slot:body-cell-avatar_info="props"> <q-td :props="props">
+			<div>
+				<q-avatar> <img :src="props.row.avatar"> </q-avatar>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class=" q-gutter-sm">
+				<q-btn color="primary" label="编辑" @click="showEditDialog(props.row.id)"></q-btn>
+				<q-btn-dropdown color="primary" label="更多"> <q-list> <q-item clickable v-close-popup @click="del(props.row.id)"> <q-item-section> <q-item-label>删除</q-item-label>
+				</q-item-section> </q-item> </q-list> </q-btn-dropdown>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/creator.js"></script>
+</body>
+</html>

@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nft.collection.domain.Collection;
 import com.nft.collection.domain.CollectionStory;
+import com.nft.dictconfig.DictHolder;
 
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.Data;
@@ -23,6 +24,8 @@ public class CollectionVO {
 
 	private String cover;
 
+	private String collectionHash;
+
 	private Double price;
 
 	private Integer quantity;
@@ -31,6 +34,12 @@ public class CollectionVO {
 
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
 	private Date saleTime;
+
+	private Boolean externalSaleFlag;
+
+	private String commodityType;
+
+	private String commodityTypeName;
 
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
 	private Date createTime;
@@ -63,6 +72,7 @@ public class CollectionVO {
 		for (CollectionStory collectionStory : collectionStorys) {
 			vo.getCollectionStorys().add(new CollectionStoryVO(collectionStory.getPicLink()));
 		}
+		vo.setCommodityTypeName(DictHolder.getDictItemName("commodityType", vo.getCommodityType()));
 		return vo;
 	}
 

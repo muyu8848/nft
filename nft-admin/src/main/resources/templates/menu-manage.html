@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog v-model="showDelDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">提示</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="row items-center"> <span class="q-ml-sm">确定要删除吗?</span> </q-card-section> <q-card-actions
+			align="right"> <q-btn flat label="取消" color="primary" v-close-popup></q-btn> <q-btn flat label="确定" color="primary" @click="delMenu"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showEditDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑菜单</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedMenu.name" label="菜单名" :dense="true"></q-input> <q-input outlined v-model="selectedMenu.url" label="url" :dense="true"></q-input> <q-input outlined v-model="selectedMenu.orderNo"
+			label="排序号" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateMenu"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增菜单</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <template
+			v-if="selectedMenu.parentId != null && selectedMenu.parentId != ''"> <q-input outlined v-model="selectedMenu.parentName" label="对应主菜单" :dense="true" disable readonly></q-input> </template> <q-input
+			outlined v-model="selectedMenu.name" label="菜单名" :dense="true"></q-input> <q-input outlined v-model="selectedMenu.url" label="url" :dense="true"></q-input> <q-input outlined
+			v-model="selectedMenu.orderNo" label="排序号" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="addMenu"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<div class="row">
+				<div class="col-md-6 offset-md-3">
+					<div style="text-align: right;">
+						<q-btn outline color="primary" label="新增主菜单" @click="showAddDialog(null, null)"></q-btn>
+					</div>
+					<q-tree class="" :nodes="menuTrees" node-key="id" label-key="name" children-key="subMenus"> <template v-slot:default-header="prop">
+					<div class="row items-center">
+						<div class="text-weight-bold text-primary">
+							{{ prop.node.name }}
+							<q-menu touch-position context-menu> <q-list dense style="min-width: 100px"> <q-item clickable v-close-popup @click="showEditDialog(prop.node.id,prop)"> <q-item-section>编辑</q-item-section>
+							</q-item> <q-item clickable v-close-popup v-show="prop.node.type == 'menu_1'" @click="showAddDialog(prop.node.id,prop.node.name)"> <q-item-section>添加下级菜单</q-item-section> </q-item> <q-item clickable
+								v-close-popup @click="showDelDialog(prop.node.id)"> <q-item-section>删除</q-item-section> </q-item> </q-list> </q-menu>
+						</div>
+					</div>
+					</template> </q-tree>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/js/menu-manage.js"></script>
+</body>
+</html>

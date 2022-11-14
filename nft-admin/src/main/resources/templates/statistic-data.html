@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.statistic-cards {
+	display: flex;
+}
+
+.statistic-card {
+	flex: 1;
+	background: white;
+	padding: 12px;
+	margin-left: 12px;
+	margin-right: 12px;
+	border-radius: 4px;
+}
+
+.statistic-card-title {
+	line-height: 2;
+	padding-bottom: 6px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.statistic-card-content {
+	display: flex;
+	align-items: baseline;
+}
+
+.statistic-card-content-unit {
+	font-size: 33px;
+	margin-right: 10px;
+}
+
+.statistic-card-bottom {
+	display: flex;
+	justify-content: space-between;
+	font-size: smaller;
+}
+
+.statistic-card-bottom-btns {
+	display: flex;
+	padding: 5px;
+}
+
+.quick-action {
+	flex: 1;
+	overflow: hidden;
+}
+
+.chart-cards {
+	margin-top: 16px;
+    padding-left: 12px;
+    padding-right: 12px;
+    background: white;
+    margin-left: 12px;
+    margin-right: 12px;
+    padding-top: 20px;
+}
+
+.chart-card-bodys {
+	display: flex;
+}
+
+.chart-card-body {
+	flex: 1;
+}
+
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/echarts/5.3.1/echarts.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<div class="statistic-cards">
+				<div class="statistic-card">
+					<div class="statistic-card-title">
+						<div>入驻会员</div>
+						<div>
+							<q-icon name="info"> <q-tooltip anchor="top middle" self="bottom middle">实名账号指已实名认证过的账号</q-tooltip> </q-icon>
+						</div>
+					</div>
+					<div class="statistic-card-content">
+						<div class="statistic-card-content-unit">{{memberStatisticData.accountCount}}</div>
+					</div>
+					<div class="statistic-card-bottom">
+						<div>实名账号：{{memberStatisticData.realNameCount}}</div>
+						<div>今日注册：{{memberStatisticData.todayRegisterCount}}</div>
+					</div>
+				</div>
+				<div class="statistic-card">
+					<div class="statistic-card-title">艺术品（数量）</div>
+					<div class="statistic-card-content">
+						<div class="statistic-card-content-unit">{{collectionStatisticData.collectionCount + collectionStatisticData.mysteryBoxCount}}个</div>
+					</div>
+					<div class="statistic-card-bottom">
+						<div>藏品：{{collectionStatisticData.collectionCount}}个</div>
+						<div>盲盒：{{collectionStatisticData.mysteryBoxCount}}个</div>
+					</div>
+				</div>
+				<div class="statistic-card">
+					<div class="statistic-card-title">今日交易（平台自营）</div>
+					<div class="statistic-card-content">
+						<div class="statistic-card-content-unit">￥{{moneyFormat(selfTradeStatisticData.todayAmount)}}</div>
+						<div class="statistic-card-content-value">共{{selfTradeStatisticData.todayCount}}笔</div>
+					</div>
+					<div class="statistic-card-bottom">
+						<div>昨日交易：￥{{moneyFormat(selfTradeStatisticData.yesterdayAmount)}}</div>
+						<div>累计交易：￥{{moneyFormat(selfTradeStatisticData.totalAmount)}}</div>
+					</div>
+				</div>
+				<div class="statistic-card">
+					<div class="statistic-card-title">今日交易（二级市场）</div>
+					<div class="statistic-card-content">
+						<div class="statistic-card-content-unit">￥{{moneyFormat(marketTradeStatisticData.todayAmount)}}</div>
+						<div class="statistic-card-content-value">共{{marketTradeStatisticData.todayCount}}笔</div>
+					</div>
+					<div class="statistic-card-bottom">
+						<div>昨日交易：￥{{moneyFormat(marketTradeStatisticData.yesterdayAmount)}}</div>
+						<div>累计交易：￥{{moneyFormat(marketTradeStatisticData.totalAmount)}}</div>
+					</div>
+				</div>
+			</div>
+			<div class="chart-cards">
+				<div class="q-gutter-md q-pb-md row justify-center">
+					<q-input outlined v-model="timeStart" label="统计日期上" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy
+						ref="timeStart" transition-show="scale" transition-hide="scale"> <q-date v-model="timeStart" mask="YYYY-MM-DD" @input="$refs.timeStart.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+					<q-input outlined v-model="timeEnd" label="统计日期下" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="timeEnd"
+						transition-show="scale" transition-hide="scale"> <q-date v-model="timeEnd" mask="YYYY-MM-DD" @input="$refs.timeEnd.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+					<q-btn-group> <q-btn color="white" text-color="black" label="最近7日" @click="setDateRange('lately7day')"></q-btn> <q-btn color="white" text-color="black" label="本月"
+						@click="setDateRange('month')"></q-btn> <q-btn color="white" text-color="black" label="上个月" @click="setDateRange('lastMonth')"></q-btn> <q-btn color="white" text-color="black" label="本年"
+						@click="setDateRange('year')"></q-btn> <q-btn color="white" text-color="black" label="全部" @click="setDateRange('all')"></q-btn> </q-btn-group>
+					<q-btn color="primary" label="查询" @click="refreshData"></q-btn>
+				</div>
+				<div class="chart-card-bodys">
+					<div class="chart-card-body">
+						<div id="selfTradeChart" style="height: 400px;"></div>
+					</div>
+					<div class="chart-card-body">
+						<div id="marketTradeChart" style="height: 400px;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/js/statistic-data.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.data-clean-tip {
+	color: red;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="row q-pa-md">
+			<div class="col-md-6 offset-md-3">
+				<q-form class="q-gutter-md">
+				<div class="q-gutter-md">
+					数据类型
+					<q-option-group v-model="selectedDataTypes" :options="dataTypes" type="checkbox" color="primary" inline></q-option-group>
+				</div>
+				<div class="q-gutter-md" style="max-width: 300px">
+					数据日期范围
+					<q-input outlined v-model="startTime" label="开始日期" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy
+						ref="startTime" transition-show="scale" transition-hide="scale"> <q-date v-model="startTime" mask="YYYY-MM-DD" @input="$refs.startTime.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+					<q-input outlined v-model="endTime" label="结束日期" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="endTime"
+						transition-show="scale" transition-hide="scale"> <q-date v-model="endTime" mask="YYYY-MM-DD" @input="$refs.endTime.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				</div>
+				<div class="q-gutter-md data-clean-tip">清理过的数据是不能恢复的,请谨慎操作!</div>
+				<q-btn color="primary" label="清理数据" @click="dataClean"></q-btn> </q-form>
+			</div>
+
+		</div>
+	</div>
+	<script src="/js/data-clean.js"></script>
+</body>
+</html>

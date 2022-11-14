@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<q-table :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData"> <template
+				v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="userName" label="登录账号" :dense="true"></q-input>
+				<q-input outlined v-model="ipAddr" label="ip地址" :dense="true"></q-input>
+				<q-select clearable outlined v-model="state" emit-value map-options :options="loginStateDictItems" option-value="dictItemCode" option-label="dictItemName" label="登录状态" :dense="true">
+				</q-select>
+				<q-input outlined v-model="startTime" label="登录时间上" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate1"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="startTime" mask="YYYY-MM-DD" @input="$refs.qdate1.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-input outlined v-model="endTime" label="登录时间下" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate2"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="endTime" mask="YYYY-MM-DD" @input="$refs.qdate2.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> <template v-slot:body-cell-state_name="props"> <q-td :props="props">
+			<div class="">
+				<div>{{props.row.stateName}}</div>
+				<div v-show="props.row.state == '0'">{{props.row.msg}}</div>
+			</div>
+			</q-td> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/login-log.js"></script>
+</body>
+</html>

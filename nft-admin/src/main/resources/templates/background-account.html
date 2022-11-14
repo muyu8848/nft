@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog persistent v-model="showAssignRoleDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">分配角色</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <template
+			v-for="role in roles"> <q-checkbox v-model="role.selectdFlag" :label="role.name"></q-checkbox> </template> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary"
+			@click="assignRole"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showEditDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑账号</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedAccount.userName" label="账号" :dense="true"></q-input> <template v-for="dictItem in functionStateDictItems"> <q-radio v-model="selectedAccount.state"
+			:val="dictItem.dictItemCode" :label="dictItem.dictItemName"></q-radio> </template> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateAccount"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增账号</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedAccount.userName" label="账号" :dense="true"></q-input> <q-input outlined v-model="selectedAccount.loginPwd" label="登录密码" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right">
+		<q-btn label="保存" color="primary" @click="addAccount"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData"> <template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="userName" label="账号" :dense="true"></q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增账号" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class=" q-gutter-sm">
+				<q-btn color="primary" label="编辑" @click="showEditDialog(props.row.id)"></q-btn>
+				<q-btn-dropdown color="primary" label="更多"> <q-list> <q-item clickable v-close-popup @click="updateLoginPwd(props.row.id)"> <q-item-section>
+				<q-item-label>修改登录密码</q-item-label> </q-item-section> </q-item> <q-item clickable v-close-popup @click="showAssignRoleDialog(props.row.id)"> <q-item-section> <q-item-label>分配角色</q-item-label> </q-item-section> </q-item> <q-item
+					clickable v-close-popup @click="delAccount(props.row.id)"> <q-item-section> <q-item-label>删除账号</q-item-label> </q-item-section> </q-item> </q-list> </q-btn-dropdown>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/background-account.js"></script>
+</body>
+</html>

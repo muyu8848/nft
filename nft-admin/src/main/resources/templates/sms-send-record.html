@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.9.4/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/dayjs/1.9.4/plugin/customParseFormat.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="mobile" label="手机号" :dense="true"></q-input>
+				<q-select style="max-width: 250px;" clearable outlined v-model="type" emit-value map-options :options="typeDictItems" option-value="dictItemCode" option-label="dictItemName" label="短信类型"
+					:dense="true"> </q-select>
+				<q-select clearable outlined v-model="state" emit-value map-options :options="stateDictItems" option-value="dictItemCode" option-label="dictItemName" label="发送状态" :dense="true"> </q-select>
+				<q-input outlined v-model="timeStart" label="创建时间上" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate1"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="timeStart" mask="YYYY-MM-DD" @input="$refs.qdate1.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-input outlined v-model="timeEnd" label="创建时间下" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate2"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="timeEnd" mask="YYYY-MM-DD" @input="$refs.qdate2.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-sms_type="props"> <q-td :props="props">
+			<div class="">
+				<div>{{props.row.smsTypeName}}</div>
+				<div v-show="props.row.verificationCode">内容:{{props.row.verificationCode}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-time_info="props"> <q-td :props="props">
+			<div class="">
+				<div>创建时间:{{props.row.createTime}}</div>
+				<div v-show="props.row.sendTime">发送时间:{{props.row.sendTime}}</div>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/sms-send-record.js"></script>
+</body>
+</html>

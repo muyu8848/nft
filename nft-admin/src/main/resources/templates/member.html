@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+
+.viewer-container {
+	z-index: 9999 !important;
+}
+
+.sync-chain-btn {
+    margin-left: 4px;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<link href="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.css" rel="stylesheet">
+	<script src="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog persistent v-model="showAirDropDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">发放空投</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-select outlined
+			v-model="collectionId" emit-value map-options :options="collections" option-value=id option-label="name" :dense="true" label="请选择空投的艺术品"> </q-select> </q-form> </q-card-section> <q-card-actions align="right">
+		<q-btn label="确定" color="primary" @click="airDrop"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<q-dialog persistent v-model="showEditDialogFlag"> <q-card style="min-width: 450px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑账号</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedAccount.nickName" label="昵称" :dense="true"></q-input> <q-input outlined v-model="selectedAccount.mobile" label="手机号" :dense="true"></q-input>
+		<div class="row">
+			<div class="col">
+				<div>账号状态</div>
+				<template v-for="dictItem in functionStateDictItems"> <q-radio v-model="selectedAccount.state" :val="dictItem.dictItemCode" :label="dictItem.dictItemName"></q-radio> </template>
+			</div>
+		</div>
+		</q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateAccount"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增账号</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedAccount.nickName" label="昵称" :dense="true"></q-input> <q-input outlined v-model="selectedAccount.mobile" label="手机号" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right">
+		<q-btn label="保存" color="primary" @click="addAccount"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="mobile" label="手机号" :dense="true"></q-input>
+				<q-input outlined v-model="inviterMobile" label="邀请人" :dense="true"></q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增账号" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-account_info="props"> <q-td :props="props">
+			<div style="font-size: smaller;">
+				<div>
+					<q-chip dense> <q-avatar> <img :src="getAvatar(props.row.avatar)"> </q-avatar> {{props.row.nickName}} </q-chip>
+					<q-badge dense :color="props.row.state == '1' ? 'primary' : 'deep-orange'" :label="props.row.stateName"></q-badge>
+				</div>
+				<div>手机号:{{props.row.mobile}}</div>
+				<div>邀请码:{{props.row.inviteCode}}</div>
+				<div v-show="props.row.inviterMobile">邀请人:{{props.row.inviterMobile}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-fund_info="props"> <q-td :props="props">
+			<div style="font-size: smaller;">
+				<div>
+					可用余额:{{props.row.balance}}
+					<q-btn-dropdown size="xs" color="secondary" label="调整"> <q-list> <q-item clickable v-close-popup dense @click="addBalance(props.row.id)"> <q-item-section>
+					<q-item-label>增加余额</q-item-label> </q-item-section> </q-item> <q-item clickable v-close-popup dense @click="reduceBalance(props.row.id)"> <q-item-section> <q-item-label>减少余额</q-item-label> </q-item-section> </q-item> </q-list> </q-btn-dropdown>
+				</div>
+				<div>{{props.row.boughtFlag ? '购买过藏品' : '尚未购买藏品'}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-wallet_addr="props"> <q-td :props="props">
+			<div style="font-size: smaller;">
+				<div v-show="props.row.bindRealNameTime === null || props.row.bindRealNameTime === ''">实名认证后生成区块链地址...</div>
+				<div v-show="props.row.bindRealNameTime">
+					<div v-show="props.row.blockChainAddr">
+						{{props.row.blockChainAddr}}<span class="copy-btn" :data-clipboard-text="props.row.blockChainAddr"><q-icon name="img:/images/copy.png"></q-icon></span>
+					</div>
+					<div v-show="props.row.blockChainAddr === null || props.row.blockChainAddr === ''">等待创建区块链地址...
+					<q-btn size="xs" color="secondary" label="上链" class="sync-chain-btn" @click="syncChain(props.row.id)"></q-btn>
+					</div>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-real_name_info="props"> <q-td :props="props">
+			<div style="font-size: smaller;">
+				<div v-if="props.row.bindRealNameTime">
+					<div>姓名:{{props.row.realName}}</div>
+					<div>身份证号:{{props.row.identityCard}}</div>
+					<div>认证时间:{{props.row.bindRealNameTime}}</div>
+				</div>
+				<div v-else>未实名</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-security_setting="props"> <q-td :props="props">
+			<div style="font-size: smaller;">
+				<div>注册时间:{{props.row.registeredTime}}</div>
+				<div v-show="props.row.latelyLoginTime">最后登录:{{props.row.latelyLoginTime}}</div>
+				<div v-show="props.row.notSetPayPwd">未设置支付密码</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class=" q-gutter-sm">
+				<q-btn color="primary" label="编辑" @click="showEditDialog(props.row.id)"></q-btn>
+				<q-btn color="primary" label="流水明细" @click="balanceChangeLog(props.row)"></q-btn>
+				<q-btn-dropdown color="primary" label="更多"> <q-list> <q-item clickable v-close-popup @click="showAirDropDialog(props.row.id)"> <q-item-section>
+				<q-item-label>发放空投</q-item-label> </q-item-section> </q-item> <q-item clickable v-close-popup @click="updatePayPwd(props.row.id)"> <q-item-section> <q-item-label>修改支付密码</q-item-label> </q-item-section> </q-item> <q-item
+					clickable v-close-popup @click="delAccount(props.row.id)"> <q-item-section> <q-item-label>删除账号</q-item-label> </q-item-section> </q-item> </q-list> </q-btn-dropdown>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/member.js"></script>
+</body>
+</html>

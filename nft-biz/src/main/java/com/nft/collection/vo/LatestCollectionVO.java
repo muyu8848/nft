@@ -33,7 +33,7 @@ public class LatestCollectionVO {
 	private Date saleTime;
 
 	private Long surplusSecond;
-
+	
 	private String creatorName;
 
 	private String creatorAvatar;

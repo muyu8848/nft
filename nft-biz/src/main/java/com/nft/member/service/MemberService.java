@@ -28,18 +28,19 @@ import com.nft.log.domain.MemberBalanceChangeLog;
 import com.nft.log.repo.MemberBalanceChangeLogRepo;
 import com.nft.member.domain.Member;
 import com.nft.member.param.AddMemberParam;
-import com.nft.member.param.ForgetLoginPwdParam;
+import com.nft.member.param.BindRealNameParam;
 import com.nft.member.param.MemberQueryCondParam;
-import com.nft.member.param.ModifyLoginPwdParam;
 import com.nft.member.param.ModifyPayPwdParam;
-import com.nft.member.param.RegisterParam;
 import com.nft.member.param.UpdateMemberParam;
 import com.nft.member.repo.MemberRepo;
 import com.nft.member.vo.AccountAuthInfoVO;
+import com.nft.member.vo.InviteInfoVO;
 import com.nft.member.vo.MemberFundInfoVO;
-import com.nft.member.vo.MemberSecurityInfoVO;
 import com.nft.member.vo.MemberStatisticDataVO;
 import com.nft.member.vo.MemberVO;
+import com.nft.member.vo.MyInviteRecordVO;
+import com.nft.member.vo.MyPersonalInfoVO;
+import com.nft.setting.repo.SystemSettingRepo;
 import com.nft.sms.domain.SmsSendRecord;
 import com.nft.sms.repo.SmsSendRecordRepo;
 import com.zengtengpeng.annotation.Lock;
@@ -70,14 +71,14 @@ public class MemberService {
 	@Autowired
 	private SmsSendRecordRepo smsSendRecordRepo;
 
-	@Lock(keys = "'sendForgetLoginPwdVerificationCode' + #mobile")
-	@Transactional
-	public void sendForgetLoginPwdVerificationCode(@NotBlank String mobile) {
-		Member existAccount = memberRepo.findByMobileAndDeletedFlagIsFalse(mobile);
-		if (existAccount == null) {
-			throw new BizException("该手机号还没注册");
-		}
-		sendVerificationCode(mobile, Constant.短信类型_验证码_忘记密码);
+	@Autowired
+	private SystemSettingRepo systemSettingRepo;
+
+	@Transactional(readOnly = true)
+	public InviteInfoVO getInviteInfo(@NotBlank String memberId) {
+		String h5Gateway = systemSettingRepo.findTopByOrderByLatelyUpdateTime().getH5Gateway();
+		Member member = memberRepo.getOne(memberId);
+		return InviteInfoVO.build(member.getInviteCode(), h5Gateway);
 	}
 
 	@Lock(keys = "'sendModifyPayPwdVerificationCode' + #memberId")
@@ -87,24 +88,38 @@ public class MemberService {
 		sendVerificationCode(member.getMobile(), Constant.短信类型_验证码_修改支付密码);
 	}
 
-	@Lock(keys = "'sendRegisterVerificationCode' + #mobile")
+	@Lock(keys = "'sendLoginVerificationCode' + #mobile")
 	@Transactional
-	public void sendRegisterVerificationCode(@NotBlank String mobile) {
-		Member existAccount = memberRepo.findByMobileAndDeletedFlagIsFalse(mobile);
-		if (existAccount != null) {
-			throw new BizException("该手机号已被注册");
+	public void sendLoginVerificationCode(@NotBlank String mobile) {
+		sendVerificationCode(mobile, Constant.短信类型_验证码_登录);
+	}
+
+	@Lock(keys = "'registerAccount' + #mobile")
+	@Transactional
+	public void registerAccount(@NotBlank String mobile, String inviteCode) {
+		Member newAccount = memberRepo.findByMobileAndDeletedFlagIsFalse(mobile);
+		if (newAccount == null) {
+			newAccount = Member.build("藏家_" + RandomUtil.randomString(9), mobile);
+			if (StrUtil.isNotBlank(inviteCode)) {
+				Member inviter = memberRepo.findByInviteCodeAndDeletedFlagIsFalse(inviteCode);
+				if (inviter != null) {
+					newAccount.updateInviteInfo(inviter);
+				}
+			}
+			memberRepo.save(newAccount);
+
+			addBalance(newAccount.getId(), 5000d, null);
 		}
-		sendVerificationCode(mobile, Constant.短信类型_验证码_注册);
 	}
 
 	@Transactional
 	public void sendVerificationCode(@NotBlank String mobile, @NotBlank String type) {
-		String smsCodeGet = redisTemplate.opsForValue().get(Constant.短信限制 + type + mobile);
+		String smsCodeGet = redisTemplate.opsForValue().get(Constant.限制 + type + mobile);
 		if (StrUtil.isNotBlank(smsCodeGet)) {
 			throw new BizException("请不要频繁获取验证码");
 		}
 
-		redisTemplate.opsForValue().set(Constant.短信限制 + type + mobile, "1", 60, TimeUnit.SECONDS);
+		redisTemplate.opsForValue().set(Constant.限制 + type + mobile, "1", 60, TimeUnit.SECONDS);
 		String verificationCode = RandomUtil.randomNumbers(4);
 		verificationCode = "6666";
 		redisTemplate.opsForValue().set(type + mobile, verificationCode, 60 * 5, TimeUnit.SECONDS);
@@ -128,7 +143,7 @@ public class MemberService {
 			if (createDate.equals(today)) {
 				vo.setTodayRegisterCount(vo.getTodayRegisterCount() + 1);
 			}
-			if (StrUtil.isNotBlank(data.getRealName())) {
+			if (data.getBindRealNameTime() != null) {
 				vo.setRealNameCount(vo.getRealNameCount() + 1);
 			}
 		}
@@ -152,14 +167,8 @@ public class MemberService {
 	}
 
 	@Transactional(readOnly = true)
-	public MemberSecurityInfoVO getMemberSecurityInfo(@NotBlank String memberId) {
-		return MemberSecurityInfoVO.convertFor(memberRepo.getOne(memberId));
-	}
-
-	@Transactional(readOnly = true)
-	public String getRealName(@NotBlank String accountId) {
-		Member member = memberRepo.getOne(accountId);
-		return member.getRealName();
+	public MyPersonalInfoVO getMyPersonalInfo(@NotBlank String memberId) {
+		return MyPersonalInfoVO.convertFor(memberRepo.getOne(memberId));
 	}
 
 	@Transactional(readOnly = true)
@@ -169,13 +178,17 @@ public class MemberService {
 	}
 
 	@Transactional
-	public void bindRealName(@NotBlank String memberId, @NotBlank String realName) {
-		Member member = memberRepo.getOne(memberId);
-		if (StrUtil.isNotBlank(member.getRealName())) {
-			throw new BizException("该账号已绑定姓名");
+	public void bindRealName(@Valid BindRealNameParam param) {
+		Member member = memberRepo.getOne(param.getMemberId());
+		if (member.getBindRealNameTime() != null) {
+			throw new BizException("该账号已完成实名");
 		}
-		member.setRealName(realName);
+		member.bindRealName(param.getRealName(), param.getIdentityCard());
 		memberRepo.save(member);
+
+		ThreadPoolUtils.getBlockChainAddrPool().schedule(() -> {
+			redissonClient.getTopic(Constant.创建区块链地址).publish(member.getId());
+		}, 1, TimeUnit.SECONDS);
 	}
 
 	@Transactional
@@ -217,6 +230,15 @@ public class MemberService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<MyInviteRecordVO> findMyInviteRecord(@NotBlank String inviterId) {
+		MemberQueryCondParam param = new MemberQueryCondParam();
+		param.setInviterId(inviterId);
+		List<Member> result = memberRepo.findAll(param.buildSpecification(),
+				Sort.by(Sort.Order.desc("registeredTime")));
+		return MyInviteRecordVO.convertFor(result);
+	}
+
+	@Transactional(readOnly = true)
 	public PageResult<MemberVO> findMemberByPage(@Valid MemberQueryCondParam param) {
 		Page<Member> result = memberRepo.findAll(param.buildSpecification(), PageRequest.of(param.getPageNum() - 1,
 				param.getPageSize(), Sort.by(Sort.Order.desc("registeredTime"))));
@@ -242,35 +264,6 @@ public class MemberService {
 		memberRepo.save(member);
 	}
 
-	@Transactional
-	public void forgetLoginPwd(@Valid ForgetLoginPwdParam param) {
-		Member existAccount = memberRepo.findByMobileAndDeletedFlagIsFalse(param.getMobile());
-		if (existAccount == null) {
-			throw new BizException("该手机号还没注册");
-		}
-		String verificationCode = redisTemplate.opsForValue().get(Constant.短信类型_验证码_忘记密码 + existAccount.getMobile());
-		if (!param.getVerificationCode().equals(verificationCode)) {
-			throw new BizException("验证码不正确");
-		}
-		modifyLoginPwd(existAccount.getId(), param.getNewPwd());
-	}
-
-	@Transactional
-	public void modifyLoginPwd(@Valid ModifyLoginPwdParam param) {
-		Member member = memberRepo.getOne(param.getMemberId());
-		if (!SaSecureUtil.sha256(param.getOldPwd()).equals(member.getLoginPwd())) {
-			throw new BizException("旧密码不正确");
-		}
-		modifyLoginPwd(param.getMemberId(), param.getNewPwd());
-	}
-
-	@Transactional
-	public void modifyLoginPwd(@NotBlank String accountId, @NotBlank String newPwd) {
-		Member member = memberRepo.getOne(accountId);
-		member.setLoginPwd(SaSecureUtil.sha256(newPwd));
-		memberRepo.save(member);
-	}
-
 	@Transactional(readOnly = true)
 	public AccountAuthInfoVO getAccountAuthInfo(@NotBlank String mobile) {
 		return AccountAuthInfoVO.convertFor(memberRepo.findByMobileAndDeletedFlagIsFalse(mobile));
@@ -278,26 +271,16 @@ public class MemberService {
 
 	@Transactional
 	public void addMember(@Valid AddMemberParam param) {
-		addMemberInner(param.getNickName(), param.getMobile(), param.getLoginPwd());
-	}
-
-	@Transactional
-	public void register(@Valid RegisterParam param) {
-		String verificationCode = redisTemplate.opsForValue().get(Constant.短信类型_验证码_注册 + param.getMobile());
-		if (!param.getVerificationCode().equals(verificationCode)) {
-			throw new BizException("验证码不正确");
-		}
-		Member newMember = Member.build(param.getNickName(), param.getMobile(), param.getLoginPwd());
-		memberRepo.save(newMember);
+		addMemberInner(param.getNickName(), param.getMobile());
 	}
 
 	@Lock(keys = "'addMember' + #mobile")
-	public void addMemberInner(String nickName, String mobile, String loginPwd) {
+	public void addMemberInner(String nickName, String mobile) {
 		Member existAccount = memberRepo.findByMobileAndDeletedFlagIsFalse(mobile);
 		if (existAccount != null) {
 			throw new BizException("手机号已存在");
 		}
-		Member newMember = Member.build(nickName, mobile, loginPwd);
+		Member newMember = Member.build(nickName, mobile);
 		memberRepo.save(newMember);
 	}
 

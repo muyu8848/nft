@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+	<q-dialog persistent v-model="showAssignRoleDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">分配菜单</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> 
+		<q-card-section class="q-pt-none">
+		<q-checkbox v-model="selectedAllMenu" label="全选/全不选" @input="toggleSelectedAllMenu"></q-checkbox>
+		<q-scroll-area style="height: 500px;">
+		<q-tree class=""
+      :nodes="menuTrees"
+      node-key="id"
+      label-key="name"
+      children-key="subMenus"
+      tick-strategy="leaf"
+      :ticked.sync="selectedMenuIds"
+      default-expand-all
+      >
+      </q-tree>
+      </q-scroll-area>
+		 </q-card-section> 
+			<q-card-actions align="right"> <q-btn label="保存" color="primary" @click="assignMenu"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showEditDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑角色</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedRole.name" label="角色名" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateRole"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增角色</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedRole.name" label="角色名" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right">
+		<q-btn label="保存" color="primary" @click="addRole"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" hide-pagination :loading="tableDataLoading" @request="loadTableData"> 
+			 <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增角色" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class="q-gutter-sm">
+				<q-btn color="primary" label="编辑" @click="showEditDialog(props.row.id)"></q-btn>
+				<q-btn-dropdown color="primary" label="更多"> <q-list> 
+				 <q-item clickable v-close-popup @click="showAssignMenuDialog(props.row.id)"> <q-item-section> <q-item-label>分配菜单</q-item-label> </q-item-section> </q-item> <q-item
+					clickable v-close-popup @click="delRole(props.row.id)"> <q-item-section> <q-item-label>删除角色</q-item-label> </q-item-section> </q-item> </q-list> </q-btn-dropdown>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/role-manage.js"></script>
+</body>
+</html>

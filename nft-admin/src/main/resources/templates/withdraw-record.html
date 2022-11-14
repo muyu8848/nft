@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> <template v-slot:top-left>
+			<div class="q-gutter-md row">
+				<q-input outlined v-model="orderNo" label="订单号" :dense="true"></q-input>
+				<q-select outlined clearable v-model="state" emit-value map-options :options="stateDictItems" option-value="dictItemCode" option-label="dictItemName" label="状态" :dense="true"
+					style="min-width: 250px; max-width: 300px"> </q-select>
+				<q-input outlined v-model="submitTimeStart" label="提交时间上" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy
+					ref="submitTimeStart" transition-show="scale" transition-hide="scale"> <q-date v-model="submitTimeStart" mask="YYYY-MM-DD" @input="$refs.submitTimeStart.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+
+				<q-input outlined v-model="submitTimeEnd" label="提交时间下" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy
+					ref="submitTimeEnd" transition-show="scale" transition-hide="scale"> <q-date v-model="submitTimeEnd" mask="YYYY-MM-DD" @input="$refs.submitTimeEnd.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-btn color="primary" label="查询" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right> </template> <template v-slot:body-cell-order_no="props"> <q-td :props="props">
+			<div class="">
+				<div>{{props.row.orderNo}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-member_info="props"> <q-td :props="props">
+			<div>
+				<div>手机号:{{props.row.memberMobile}}</div>
+				<div>区块链地址:{{props.row.memberBlockChainAddr}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-amount_info="props"> <q-td :props="props">
+			<div class="">
+				<div>提现金额:{{props.row.amount}}</div>
+				<div>手续费:{{props.row.handlingFee}}</div>
+				<div>到账金额:{{props.row.toTheAccount}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-bank_card_info="props"> <q-td :props="props">
+			<div v-show="props.row.settlementAccount.type == 'bankCard'">
+				<div>
+					姓名:{{props.row.settlementAccount.realName}}<span class="copy-btn" :data-clipboard-text="props.row.settlementAccount.realName"><q-icon name="img:/images/copy.png"></q-icon></span>
+				</div>
+				<div>开户银行:{{props.row.settlementAccount.bankName}}</div>
+				<div>
+					银行卡号:{{props.row.settlementAccount.cardNumber}}<span class="copy-btn" :data-clipboard-text="props.row.settlementAccount.cardNumber"><q-icon name="img:/images/copy.png"></q-icon></span>
+				</div>
+			</div>
+			<div v-show="props.row.settlementAccount.type == 'alipay' || props.row.settlementAccount.type == 'wechat'">
+				<div>{{props.row.settlementAccount.typeName}}</div>
+				<div>
+					姓名:{{props.row.settlementAccount.realName}}<span class="copy-btn" :data-clipboard-text="props.row.settlementAccount.realName"><q-icon name="img:/images/copy.png"></q-icon></span>
+				</div>
+				<div>
+					账户:{{props.row.settlementAccount.account}}<span class="copy-btn" :data-clipboard-text="props.row.settlementAccount.account"><q-icon name="img:/images/copy.png"></q-icon></span>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-state_info="props"> <q-td :props="props">
+			<div class="">
+				<div>{{props.row.stateName}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class="">
+				<div class="row q-gutter-sm q-pb-md" v-show="props.row.state == '1'">
+					<q-btn color="primary" label="确认已打款" @click="confirmCredited(props.row.id)"></q-btn>
+					<q-btn color="primary" label="驳回" @click="reject(props.row.id)"></q-btn>
+				</div>
+			</div>
+			</q-td> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/withdraw-record.js"></script>
+</body>
+</html>

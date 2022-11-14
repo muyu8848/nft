@@ -21,6 +21,8 @@ public class MyPayOrderVO {
 	private String id;
 
 	private String orderNo;
+	
+	private String commodityType;
 
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
 	private Date createTime;
@@ -57,6 +59,7 @@ public class MyPayOrderVO {
 		if (po.getCollection() != null) {
 			Collection collection = po.getCollection();
 			if (collection != null) {
+				vo.setCommodityType(collection.getCommodityType());
 				vo.setCollectionName(collection.getName());
 				vo.setCollectionCover(collection.getCover());
 			}

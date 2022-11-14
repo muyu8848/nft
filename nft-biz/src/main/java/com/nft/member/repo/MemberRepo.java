@@ -15,4 +15,6 @@ public interface MemberRepo extends JpaRepository<Member, String>, JpaSpecificat
 
 	Member findByBlockChainAddrAndDeletedFlagIsFalse(String blockChainAddr);
 
+	Member findByInviteCodeAndDeletedFlagIsFalse(String inviteCode);
+
 }

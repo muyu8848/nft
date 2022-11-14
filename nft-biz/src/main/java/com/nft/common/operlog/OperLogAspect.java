@@ -23,7 +23,6 @@ import com.nft.log.service.OperLogService;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.extra.servlet.ServletUtil;
-import cn.hutool.http.HttpUtil;
 
 @Aspect
 @Component
@@ -65,7 +64,7 @@ public class OperLogAspect {
 		operLog.setRequestMethod(request.getMethod());
 		operLog.setRequestUrl(request.getRequestURL().toString());
 		operLog.setRequestParam(ServletUtil.isMultipart(request) ? "" : JSON.toJSONString(joinPoint.getArgs()));
-		operLog.setIpAddr(HttpUtil.getClientIP(request));
+		operLog.setIpAddr(ServletUtil.getClientIP(request));
 		operLog.setOperAccountId(operAccountId);
 		operLog.setOperName(operName);
 		operLog.setOperTime(new Date());

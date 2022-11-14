@@ -25,9 +25,7 @@ public class NoticeAbstractVO implements Serializable {
 
 	private String title;
 
-	private Boolean importantFlag;
-
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	@JsonFormat(pattern = "MM月dd日", timezone = "GMT+8")
 	private Date publishTime;
 
 	public static List<NoticeAbstractVO> convertFor(List<Notice> pos) {

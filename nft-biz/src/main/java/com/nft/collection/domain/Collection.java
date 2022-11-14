@@ -21,7 +21,6 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.nft.common.utils.IdUtils;
-import com.nft.constants.Constant;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -43,10 +42,14 @@ public class Collection implements Serializable {
 	@Column(name = "id", length = 32)
 	private String id;
 
+	private String commodityType;
+
 	private String name;
 
 	private String cover;
 
+	private String collectionHash;
+	
 	private Double price;
 
 	private Integer quantity;
@@ -55,7 +58,11 @@ public class Collection implements Serializable {
 
 	private Date saleTime;
 
+	private Boolean externalSaleFlag;
+
 	private Date createTime;
+	
+	private Date syncChainTime;
 
 	private Boolean deletedFlag;
 
@@ -76,20 +83,28 @@ public class Collection implements Serializable {
 	@OrderBy("orderNo ASC")
 	private Set<CollectionStory> collectionStorys;
 
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "collection_id", foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+	@OrderBy("probability ASC")
+	private Set<MysteryBoxCommodity> subCommoditys;
+	
+	public void syncChain(String collectionHash) {
+		this.setCollectionHash(collectionHash);
+		this.setSyncChainTime(new Date());
+	}
+
 	public void deleted() {
 		this.setDeletedFlag(true);
 		this.setDeletedTime(new Date());
 	}
 
-	public MemberHoldCollection buy(String memberId) {
-		MemberHoldCollection po = new MemberHoldCollection();
+	public IssuedCollection issue() {
+		IssuedCollection po = new IssuedCollection();
 		po.setId(IdUtils.getId());
-		po.setGainWay(Constant.藏品获取方式_购买);
-		po.setState(Constant.持有藏品状态_持有中);
-		po.setHoldTime(new Date());
-		po.setPrice(this.getPrice());
+		po.setIssueTime(new Date());
+		po.setCollectionSerialNumber(this.getQuantity() - this.getStock());
 		po.setCollectionId(this.getId());
-		po.setMemberId(memberId);
+		po.setDeletedFlag(false);
 		return po;
 	}
 

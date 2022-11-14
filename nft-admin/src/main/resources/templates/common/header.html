@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet" type="text/css">
+<link href="/js/quasar/quasar.min.css" rel="stylesheet" type="text/css">
+<link href="/css/common/common.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/vue/2.6.9/vue.min.js"></script>
+	<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+	<script src="/js/quasar/quasar.umd.min.js"></script>
+	<script src="/js/quasar/zh-hans.umd.min.js"></script>
+	<script src="/js/common/common.js"></script>
+	<div id="header" class="header-nav">
+		<div class="">
+			<div class="row no-wrap">
+				<q-toolbar class="col-2"> <q-avatar color="primary" text-color="white"> <img src="/images/logo-mono-white.svg"> </q-avatar> <q-toolbar-title>管理后台</q-toolbar-title> </q-toolbar>
+				<q-toolbar class="col-10"> <template v-for="(menu, index) in menus"> <template v-if="!hasSubMenu(menu)"> <q-btn stretch flat :label="menu.name"
+					:color="currentPathName == menu.url ? 'primary' : 'black'" @click="navTo(menu.url)"></q-btn> </template> <template v-if="hasSubMenu(menu)"> <q-btn-dropdown stretch flat :label="menu.name"
+					:color="parentMenuActive(menu.subMenus) ? 'primary' : 'black'"> <q-list> <template v-for="subMenu in menu.subMenus"> <q-item clickable v-close-popup
+					active-class="text-primary" :active="currentPathName == subMenu.url" @click="navTo(subMenu.url)"> <q-item-section> <q-item-label>{{subMenu.name}}</q-item-label> </q-item-section> </q-item> </template> </q-list> </q-btn-dropdown> </template> </template> <q-space></q-space>
+				<q-btn-dropdown stretch flat no-caps color="black"> <template v-slot:label>
+				<div class="row items-center no-wrap">
+					<q-avatar> <img src="/images/boy-avatar.png"> </q-avatar>
+					<div class="text-center q-pl-md">{{userName}}</div>
+				</div>
+				</template>
+				<div class="row no-wrap q-pa-md">
+					<div class="column">
+						<div class="text-h6 q-mb-md">设置</div>
+						<div class="column items-center">
+							<q-btn color="primary" label="刷新缓存" push size="sm" v-close-popup @click="refreshCache"></q-btn>
+						</div>
+					</div>
+					<q-separator vertical inset class="q-mx-lg"></q-separator>
+					<div class="column items-center">
+						<q-avatar size="72px"> <img src="/images/boy-avatar.png"> </q-avatar>
+						<div class="text-subtitle1 q-mt-md q-mb-xs">{{userName}}</div>
+						<q-btn color="primary" label="退出登录" push size="sm" v-close-popup @click="logout"></q-btn>
+					</div>
+				</div>
+				</q-btn-dropdown> </q-toolbar>
+			</div>
+		</div>
+	</div>
+	<script src="/js/common/header.js"></script>
+</body>
+</html>

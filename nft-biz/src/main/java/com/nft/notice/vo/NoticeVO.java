@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.nft.dictconfig.DictHolder;
 import com.nft.notice.domain.Notice;
 
 import cn.hutool.core.collection.CollectionUtil;
@@ -27,10 +28,15 @@ public class NoticeVO implements Serializable {
 
 	private String content;
 
-	private Boolean importantFlag;
+	private String type;
 
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	private String typeName;
+
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
 	private Date publishTime;
+	
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	private Date lastModifyTime;
 
 	public static List<NoticeVO> convertFor(List<Notice> pos) {
 		if (CollectionUtil.isEmpty(pos)) {
@@ -49,6 +55,7 @@ public class NoticeVO implements Serializable {
 		}
 		NoticeVO vo = new NoticeVO();
 		BeanUtils.copyProperties(po, vo);
+		vo.setTypeName(DictHolder.getDictItemName("noticeType", vo.getType()));
 		return vo;
 	}
 

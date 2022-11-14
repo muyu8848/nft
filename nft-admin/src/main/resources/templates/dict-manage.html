@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog persistent v-model="showEditDictDataDialogFlag"> <q-card style="min-width: 560px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑字典数据</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-markup-table> <template>
+		<thead>
+			<tr>
+				<th class="text-left"></th>
+				<th class="text-left">字典项code</th>
+				<th class="text-left">字典项名称</th>
+				<th class="text-left">操作</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="(dictItem, index) in dictItems">
+				<td class="text-left">
+				<q-btn-group>
+				<q-btn size="xs" color="primary" icon="arrow_upward" :disable="index == 0" @click="moveUpDictItem(index)"></q-btn>
+				<q-btn size="xs"  color="primary" icon="arrow_downward" :disable="index == dictItems.length - 1" @click="moveDownDictItem(index)"></q-btn>
+				</q-btn-group>
+				</td>
+				<td class="text-left"><q-input filled v-model="dictItem.dictItemCode" :dense="true"></q-input></td>
+				<td class="text-left"><q-input filled v-model="dictItem.dictItemName" :dense="true"></q-input></td>
+				<td class="text-left">
+					<div class=" q-gutter-sm">
+						<q-btn color="primary" label="删除" @click="delDictItem(index)"></q-btn>
+					</div>
+				</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> <q-card-actions align="right"> <q-btn label="新增字典项" color="primary" @click="addDictItem"></q-btn> <q-btn label="保存" color="primary" @click="updateDictData"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog v-model="showDelDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">提示</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="row items-center"> <span class="q-ml-sm">确定要删除吗?</span> </q-card-section> <q-card-actions
+			align="right"> <q-btn flat label="取消" color="primary" v-close-popup></q-btn> <q-btn flat label="确定" color="primary" @click="delDictType"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showEditDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑字典</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedDictType.dictTypeCode" label="字典code" :dense="true"></q-input> <q-input outlined v-model="selectedDictType.dictTypeName" label="字典名称" :dense="true"></q-input> <q-input outlined
+			type="textarea" v-model="selectedDictType.note" label="备注" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateDictType"></q-btn>
+		</q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增字典</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-input outlined
+			v-model="selectedDictType.dictTypeCode" label="字典code" :dense="true"></q-input> <q-input outlined v-model="selectedDictType.dictTypeName" label="字典名称" :dense="true"></q-input> <q-input outlined
+			type="textarea" v-model="selectedDictType.note" label="备注" :dense="true"></q-input> </q-form> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="addDictType"></q-btn>
+		</q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData"> <template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="dictTypeCode" label="字典code" :dense="true"></q-input>
+				<q-input outlined v-model="dictTypeName" label="字典名称" :dense="true"></q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增字典" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class=" q-gutter-sm">
+				<q-btn color="primary" label="编辑字典数据" @click="showEditDictDataDialog(props.row.id)"></q-btn>
+				<q-btn color="primary" label="编辑" @click="showEditDialog(props.row.id)"></q-btn>
+				<q-btn color="primary" label="删除" @click="showDelDialog(props.row.id)"></q-btn>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/dict-manage.js"></script>
+</body>
+</html>

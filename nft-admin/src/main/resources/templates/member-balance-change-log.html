@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.9.4/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/dayjs/1.9.4/plugin/customParseFormat.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-input outlined v-model="mobile" label="手机号" :dense="true"></q-input>
+				<q-input outlined v-model="bizOrderNo" label="业务订单号" :dense="true"></q-input>
+				<q-select clearable outlined v-model="type" emit-value map-options :options="typeDictItems" option-value="dictItemCode" option-label="dictItemName" label="变动类型" :dense="true"> </q-select>
+				<q-input outlined v-model="timeStart" label="变动时间上" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate1"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="timeStart" mask="YYYY-MM-DD" @input="$refs.qdate1.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-input outlined v-model="timeEnd" label="变动时间下" :dense="true"> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy ref="qdate2"
+					transition-show="scale" transition-hide="scale"> <q-date v-model="timeEnd" mask="YYYY-MM-DD" @input="$refs.qdate2.hide()"> </q-date> </q-popup-proxy> </q-icon> </template> </q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-account_info="props"> <q-td :props="props">
+			<div class="">
+				<div>{{props.row.mobile}}({{props.row.realName ? props.row.realName : '未实名'}})</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-balance_change="props"> <q-td :props="props">
+			<div class="">
+				<div>
+					变动前:{{props.row.balanceBefore}},变化:<span v-show="props.row.balanceChange > 0">+</span>{{props.row.balanceChange}}
+				</div>
+				<div>变动后:{{props.row.balanceAfter}}</div>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/member-balance-change-log.js"></script>
+</body>
+</html>

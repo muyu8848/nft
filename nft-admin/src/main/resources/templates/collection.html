@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style type="text/css">
+.copy-btn {
+	padding-left: 4px;
+	cursor: pointer;
+}
+
+.viewer-container {
+	z-index: 9999 !important;
+}
+
+.collection-hash {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: inline-block;
+	width: 200px;
+}
+
+.sync-chain-btn {
+	margin-left: 4px;
+}
+</style>
+</head>
+<body>
+	<script src="https://cdn.staticfile.org/dayjs/1.7.8/dayjs.min.js"></script>
+	<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+	<link href="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.css" rel="stylesheet">
+	<script src="https://cdn.staticfile.org/viewerjs/1.3.3/viewer.min.js"></script>
+	<div th:replace="common/header::html"></div>
+	<div id="q-app">
+		<q-dialog persistent v-model="updateMysteryBoxCommodityDialogFlag"> <q-card style="min-width: 500px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑盲盒商品</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-markup-table style="height: 400px"> <template>
+		<thead>
+			<tr>
+				<th class="text-left">藏品</th>
+				<th class="text-left">概率(%)</th>
+				<th class="text-left">操作</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="(subCommodity, index) in subCommoditys">
+				<td class="text-left"><q-select outlined style="min-width: 300px; max-width: 300px" v-model="subCommodity.commodityId" emit-value map-options :options="allCollections" option-value=id
+						option-label="name" :dense="true"> <template v-slot:option="scope"> <q-item v-bind="scope.itemProps" v-on="scope.itemEvents"> <q-item-section avatar>
+					<img :src="scope.opt.cover" style="height: 30px; width: 30px; object-fit: contain;"> </q-item-section> <q-item-section> <q-item-label>{{ scope.opt.name }}</q-item-label> </q-item-section> </q-item> </template> </q-select></td>
+				<td class="text-left"><q-input outlined type="number" v-model.number="subCommodity.probability" :dense="true"></q-input></td>
+				<td class="text-left">
+					<div class="q-gutter-sm">
+						<q-btn color="primary" label="删除" @click="removeSubCommodity(index)"></q-btn>
+					</div>
+
+				</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateMysteryBoxCommodity"></q-btn> <q-btn label="新增" color="primary" @click="addSubCommodity"></q-btn> </q-card-actions>
+		</q-card> </q-dialog>
+
+		<q-dialog persistent v-model="issuedCollectionDialogFlag"> <q-card style="min-width: 320px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">铸造记录</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-markup-table style="height: 400px"> <template>
+		<thead>
+			<tr>
+				<th class="text-left">艺术品编号</th>
+				<th class="text-left">唯一标识</th>
+				<th class="text-left">铸造时间</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="issuedCollection in issuedCollections">
+				<td class="text-left">{{issuedCollection.collectionSerialNumber}}</td>
+				<td class="text-left">{{issuedCollection.uniqueId}}</td>
+				<td class="text-left">{{issuedCollection.issueTime}}</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> </q-card> </q-dialog>
+		<q-dialog persistent v-model="exchangeCodeDialogFlag"> <q-card style="min-width: 320px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">兑换码管理</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-markup-table style="height: 400px"> <template>
+		<thead>
+			<tr>
+				<th class="text-left">代码</th>
+				<th class="text-left">状态</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="exchangeCode in exchangeCodes">
+				<td class="text-left">{{exchangeCode.code}}</td>
+				<td class="text-left">{{exchangeCode.stateName}}</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> <q-card-actions align="right"> <q-btn label="生成兑换码" color="primary" @click="generateExchangeCode"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<q-dialog persistent v-model="viewCollectionStoryDialogFlag"> <q-card style="width: 500px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">藏品故事</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-scroll-area style="height: 600px;">
+		<div style="padding-right: 16px;">
+			<div v-for="collectionStory in collectionStorys">
+				<q-img :src="collectionStory.picLink" style="height: auto; width: 100%"></q-img>
+			</div>
+		</div>
+		</q-scroll-area> </q-card-section> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="updateCollectionStoryDialogFlag"> <q-card style="min-width: 500px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">编辑藏品故事</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-markup-table style="height: 400px"> <template>
+		<thead>
+			<tr>
+				<th class="text-left">图片链接</th>
+				<th class="text-left">操作</th>
+			</tr>
+		</thead>
+		</template> <template>
+		<tbody>
+			<tr v-for="(collectionStory, index) in collectionStorys">
+				<td class="text-left"><q-input outlined v-model="collectionStory.picLink" label="图片链接" :dense="true"></q-input></td>
+				<td class="text-left">
+					<div class="q-gutter-sm">
+						<q-btn color="primary" label="删除" @click="removeStoryPicLink(index)"></q-btn>
+					</div>
+
+				</td>
+			</tr>
+		</tbody>
+		</template> </q-markup-table> </q-card-section> <q-card-actions align="right"> <q-btn label="保存" color="primary" @click="updateCollectionStory"></q-btn> <q-btn label="新增" color="primary" @click="addStoryPicLink"></q-btn> </q-card-actions> </q-card> </q-dialog>
+
+		<q-dialog persistent v-model="showAddDialogFlag"> <q-card style="min-width: 350px;"> <q-card-section class="row items-center q-pb-none">
+		<div class="text-h6">新增艺术品</div>
+		<q-space></q-space> <q-btn icon="close" flat round dense v-close-popup></q-btn> </q-card-section> <q-card-section class="q-pt-none"> <q-form class="q-gutter-md"> <q-select outlined
+			v-model="selectedRecord.commodityType" emit-value map-options :options="commodityTypeDictItems" option-value="dictItemCode" option-label="dictItemName" label="类型" :dense="true"> </q-select> <q-input
+			outlined v-model="selectedRecord.name" label="艺术品名称" :dense="true"></q-input> <q-input outlined v-model="selectedRecord.cover" label="封面链接" :dense="true"></q-input> <q-input outlined type="number"
+			v-model.number="selectedRecord.price" label="价格" :dense="true"></q-input> <q-input outlined type="number" v-model="selectedRecord.quantity" label="发行数量" :dense="true"></q-input> <q-input
+			bottom-slots outlined v-model="selectedRecord.saleTime" label="发售时间" :dense="true"> <template v-slot:hint> <q-checkbox dense v-model="selectedRecord.notExternalSaleFlag"
+			label="不对外发售"></q-checkbox> </template> <template v-slot:append> <q-icon name="event" class="cursor-pointer"> <q-popup-proxy transition-show="scale" transition-hide="scale">
+		<q-date v-model="selectedRecord.saleTime" mask="YYYY-MM-DD HH:mm">
+		<div class="row items-center justify-end">
+			<q-btn v-close-popup label="确定" color="primary" flat></q-btn>
+		</div>
+		</q-date> </q-popup-proxy> </q-icon> <q-icon name="access_time" class="cursor-pointer"> <q-popup-proxy transition-show="scale" transition-hide="scale"> <q-time v-model="selectedRecord.saleTime"
+			mask="YYYY-MM-DD HH:mm" format24h>
+		<div class="row items-center justify-end">
+			<q-btn v-close-popup label="确定" color="primary" flat></q-btn>
+		</div>
+		</q-time> </q-popup-proxy> </q-icon> </template> </q-input> <q-select clearable outlined v-model="selectedRecord.creatorId" emit-value map-options :options="creators" option-value="id" option-label="name" label="创作者" :dense="true"> </q-select> </q-form> </q-card-section> <q-card-actions
+			align="right"> <q-btn label="保存" color="primary" @click="add"></q-btn> </q-card-actions> </q-card> </q-dialog>
+		<div class="q-pa-md">
+			<q-table color="primary" :data="tableData" :columns="tableColumns" :pagination.sync="tablePagination" :rows-per-page-options="[10, 30, 50, 100]" :loading="tableDataLoading" @request="loadTableData">
+			<template v-slot:top-left>
+			<div class="q-gutter-md row query-cond">
+				<q-select clearable outlined v-model="commodityType" emit-value map-options :options="commodityTypeDictItems" option-value="dictItemCode" option-label="dictItemName" label="类型" :dense="true"> </q-select>
+				<q-input outlined v-model="name" label="艺术品名称" :dense="true"></q-input>
+				<q-btn color="primary" label="查询" icon="search" @click="refreshTable"></q-btn>
+			</div>
+			</template> <template v-slot:top-right>
+			<div class="q-gutter-md row">
+				<q-btn outline color="primary" label="新增艺术品" @click="showAddDialog"></q-btn>
+			</div>
+			</template> <template v-slot:body-cell-name_info="props"> <q-td :props="props">
+			<div style="display: flex; align-items: center;">
+				<div>
+					<img :src="props.row.cover" style="height: 50px; width: 50px; object-fit: contain;">
+				</div>
+				<div style="padding-left: 4px;">
+					<div>
+						<q-badge color="primary">{{props.row.commodityTypeName}}</q-badge>
+						{{props.row.name}}
+					</div>
+					<div>{{props.row.creatorName}}</div>
+					<div style="display: flex; align-items: center;">
+						HASH:<span class="collection-hash" v-show="props.row.collectionHash">{{props.row.collectionHash}}</span><span class="copy-btn" :data-clipboard-text="props.row.collectionHash"
+							v-show="props.row.collectionHash"><q-icon name="img:/images/copy.png"></q-icon></span>
+						<q-btn size="xs" color="secondary" label="上链" class="sync-chain-btn" v-show="props.row.collectionHash == null || props.row.collectionHash == ''" @click="syncChain(props.row.id)"></q-btn>
+					</div>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-story_info="props"> <q-td :props="props">
+			<div>
+				<img v-for="collectionStory in props.row.collectionStorys" :src="collectionStory.picLink" style="height: 40px; width: 40px; object-fit: contain;">
+				<div>
+					<q-btn size="xs" color="secondary" label="查看大图" @click="showViewCollectionStoryDialog(props.row)"></q-btn>
+					<q-btn size="xs" color="secondary" label="编辑" @click="showUpdateCollectionStoryDialog(props.row.id)"></q-btn>
+				</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-sale_time="props"> <q-td :props="props">
+			<div>
+				<div>{{props.row.externalSaleFlag ? props.row.saleTime : '不对外发售'}}</div>
+			</div>
+			</q-td> </template> <template v-slot:body-cell-action="props"> <q-td :props="props">
+			<div class=" q-gutter-sm">
+				<q-btn color="primary" label="铸造记录" @click="showIssuedCollectionDialog(props.row.id)"></q-btn>
+				<q-btn color="primary" label="兑换码" @click="showExchangeCodeDialog(props.row.id)"></q-btn>
+				<q-btn-dropdown color="primary" label="更多"> <q-list> <q-item clickable v-close-popup v-show="props.row.commodityType == '2'"
+					@click="showUpdateMysteryBoxCommodityDialog(props.row.id)"> <q-item-section> <q-item-label>盲盒商品</q-item-label> </q-item-section> </q-item> <q-item clickable v-close-popup
+					@click="del(props.row.id)"> <q-item-section> <q-item-label>删除</q-item-label> </q-item-section> </q-item> </q-list> </q-btn-dropdown>
+			</div>
+			</q-td> </template> <template v-slot:loading> <q-inner-loading showing color="primary"></q-inner-loading> </template> </q-table>
+		</div>
+	</div>
+	<script src="/js/collection.js"></script>
+</body>
+</html>

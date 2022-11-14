@@ -35,10 +35,12 @@ public class Notice implements Serializable {
 	private String title;
 
 	private String content;
-
-	private Boolean importantFlag;
+	
+	private String type;
 
 	private Date publishTime;
+	
+	private Date lastModifyTime;
 
 	private Boolean deletedFlag;
 

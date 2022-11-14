@@ -3,7 +3,7 @@ package com.nft.collection.vo;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.nft.collection.domain.MemberHoldCollection;
+import com.nft.collection.domain.MemberResaleCollection;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DatePattern;
@@ -23,18 +23,18 @@ public class MyResaleCollectionVO {
 	
 	private Double resalePrice;
 
-	public static List<MyResaleCollectionVO> convertFor(List<MemberHoldCollection> pos) {
+	public static List<MyResaleCollectionVO> convertFor(List<MemberResaleCollection> pos) {
 		if (CollectionUtil.isEmpty(pos)) {
 			return new ArrayList<>();
 		}
 		List<MyResaleCollectionVO> vos = new ArrayList<>();
-		for (MemberHoldCollection po : pos) {
+		for (MemberResaleCollection po : pos) {
 			vos.add(convertFor(po));
 		}
 		return vos;
 	}
 
-	public static MyResaleCollectionVO convertFor(MemberHoldCollection po) {
+	public static MyResaleCollectionVO convertFor(MemberResaleCollection po) {
 		if (po == null) {
 			return null;
 		}

@@ -15,9 +15,11 @@ public class SystemSettingVO {
 
 	private String appSchema;
 
-	private String apiGateway;
+	private String h5Gateway;
 
 	private String localStoragePath;
+
+	private String customerServiceUrl;
 
 	public static SystemSettingVO convertFor(SystemSetting po) {
 		SystemSettingVO vo = new SystemSettingVO();
